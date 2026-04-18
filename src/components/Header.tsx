@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Film, Menu, User, LogOut, Menu as MenuIcon, Search, MapPin } from "lucide-react";
+import { Film, Menu, User, LogOut, Menu as MenuIcon, Search, MapPin, Bell } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useLocation } from "@/context/LocationContext";
 import LoginDialog from "./LoginDialog";
@@ -58,29 +58,29 @@ const Header = ({ onSearch, onOffersClick, onEventsClick }: HeaderProps) => {
             </div>
 
             {/* Navigation */}
-            <nav className="hidden md:flex items-center gap-6 flex-1 justify-center">
-              <a href="#movies" className="text-gray-100 hover:text-red-400 transition-colors text-sm font-medium">
+            <nav className="hidden md:flex items-center gap-8 flex-1 justify-center">
+              <a href="#movies" className="text-gray-100 hover:text-red-400 transition-colors text-sm font-medium border-b-2 border-transparent hover:border-red-400 pb-1">
                 Movies
               </a>
-              <a href="#theaters" className="text-gray-100 hover:text-red-400 transition-colors text-sm font-medium">
+              <a href="#theaters" className="text-gray-100 hover:text-red-400 transition-colors text-sm font-medium border-b-2 border-transparent hover:border-red-400 pb-1">
                 Theaters
               </a>
               <button 
                 onClick={onOffersClick}
-                className="text-gray-100 hover:text-red-400 transition-colors text-sm font-medium cursor-pointer"
+                className="text-gray-100 hover:text-red-400 transition-colors text-sm font-medium border-b-2 border-transparent hover:border-red-400 pb-1 cursor-pointer"
               >
                 Offers
               </button>
               <button 
                 onClick={onEventsClick}
-                className="text-gray-100 hover:text-red-400 transition-colors text-sm font-medium cursor-pointer"
+                className="text-gray-100 hover:text-red-400 transition-colors text-sm font-medium border-b-2 border-transparent hover:border-red-400 pb-1 cursor-pointer"
               >
                 Events
               </button>
             </nav>
 
             {/* Location Selector & Search */}
-            <div className="hidden lg:flex items-center gap-3 mr-4">
+            <div className="hidden lg:flex items-center gap-6 mr-8">
               {/* City Selector */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -128,19 +128,31 @@ const Header = ({ onSearch, onOffersClick, onEventsClick }: HeaderProps) => {
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 ml-8">
               {isAuthenticated && user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="relative text-gray-100 hover:text-red-400"
-                    >
-                      <User className="h-5 w-5" />
-                      <span className="absolute top-0 right-0 h-2 w-2 bg-green-400 rounded-full animate-pulse"></span>
-                    </Button>
-                  </DropdownMenuTrigger>
+                <>
+                  {/* Notifications */}
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="relative text-gray-100 hover:text-red-400 hidden sm:flex"
+                  >
+                    <Bell className="h-5 w-5" />
+                    <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full animate-pulse"></span>
+                  </Button>
+
+                  {/* User Dropdown */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="relative text-gray-100 hover:text-red-400"
+                      >
+                        <User className="h-5 w-5" />
+                        <span className="absolute top-0 right-0 h-2 w-2 bg-green-400 rounded-full animate-pulse"></span>
+                      </Button>
+                    </DropdownMenuTrigger>
                   <DropdownMenuContent 
                     align="end" 
                     className="w-56 bg-slate-900 border-red-600/50"
@@ -171,6 +183,7 @@ const Header = ({ onSearch, onOffersClick, onEventsClick }: HeaderProps) => {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+                </>
               ) : (
                 <Button
                   className="hidden md:flex bg-red-600 hover:bg-red-700 text-white font-semibold"

@@ -35,6 +35,15 @@ const MovieCard = ({
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
 
+  const handlePlayTrailer = () => {
+    // For demo purposes, show a message or open YouTube
+    toast({
+      title: "🎬 Coming Soon",
+      description: `Trailer for "${title}" will be available soon!`,
+    });
+    // In production, you could open a video modal here
+  };
+
   const handleViewShows = () => {
     if (!isAuthenticated) {
       toast({
@@ -84,47 +93,51 @@ const placeholderImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/200
   return (
     <>
       <Card 
-        className="group overflow-hidden border-slate-700 hover:border-red-600/80 transition-all duration-300 cursor-pointer bg-slate-800 shadow-xl hover:shadow-2xl hover:shadow-red-600/30"
+        className="group overflow-hidden border-slate-700 hover:border-red-600/80 transition-all duration-300 cursor-pointer bg-slate-800 hover:shadow-red-600/25"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         style={{
-          transform: isHovered ? 'scale(1.03)' : 'scale(1)',
-          transition: 'transform 0.3s ease-in-out'
+          transform: isHovered ? 'scale(1.04)' : 'scale(1)',
+          transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+          boxShadow: isHovered ? '0 20px 25px -5px rgba(220, 38, 38, 0.25)' : '0 10px 15px -3px rgba(0, 0, 0, 0.3)'
         }}
       >
         {/* Poster Image Container */}
-        <div className="relative overflow-hidden h-80 bg-slate-900">
+        <div className="relative overflow-hidden h-80 bg-slate-900 group/image">
           {banner && banner !== placeholderImage && (
             <img 
               src={banner} 
               alt={`${title} banner`}
-              className="absolute w-full h-full object-cover opacity-20 group-hover:opacity-30 transition-opacity duration-300"
+              className="absolute w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500"
               onError={() => {}}
             />
           )}
           
-          {/* Main Poster */}
+          {/* Main Poster - Full Visibility */}
           <img 
             src={getSafeImageUrl(image)} 
             alt={title}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 relative z-10"
+            className="w-full h-full object-cover group-hover:scale-125 transition-transform duration-500 relative z-10"
             onError={(e) => {
               e.currentTarget.src = placeholderImage;
             }}
           />
 
-          {/* Overlay on Hover */}
+          {/* Subtle Dark Overlay on Hover Only */}
           <div 
-            className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center"
+            className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center"
           >
-            <button className="bg-red-600 hover:bg-red-700 text-white p-3 rounded-full transform scale-0 group-hover:scale-100 transition-transform duration-300 shadow-lg">
-              <Play className="h-6 w-6 fill-white" />
+            <button 
+              onClick={handlePlayTrailer}
+              className="bg-red-600 hover:bg-red-700 text-white p-4 rounded-full transform scale-0 group-hover:scale-100 transition-all duration-300 shadow-2xl hover:shadow-red-600/50 hover:scale-110"
+            >
+              <Play className="h-8 w-8 fill-white" />
             </button>
           </div>
 
           {/* Top Badges */}
           <div className="absolute top-3 left-3 right-3 z-30 flex gap-2 flex-wrap">
-            <Badge variant="secondary" className="bg-slate-900/80 backdrop-blur-sm text-gray-200 border-0">
+            <Badge variant="secondary" className="bg-slate-900/80 backdrop-blur-sm text-gray-200 border-0 text-xs font-semibold">
               <Volume2 className="h-3 w-3 mr-1" />
               {language}
             </Badge>
@@ -132,9 +145,9 @@ const placeholderImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/200
 
           {/* Rating Badge - Top Right */}
           {rating > 0 && (
-            <div className={`absolute top-3 right-3 ${getRatingColor(rating)} p-2 rounded-lg shadow-lg z-30 flex items-center gap-0.5 text-white font-bold`}>
+            <div className={`absolute top-3 right-3 ${getRatingColor(rating)} px-3 py-1 rounded-full shadow-lg z-30 flex items-center gap-1 text-white font-bold text-sm hover:scale-110 transition-transform`}>
               <Star className="h-4 w-4 fill-white" />
-              <span className="text-sm">{rating.toFixed(1)}</span>
+              <span>{rating.toFixed(1)}</span>
             </div>
           )}
         </div>

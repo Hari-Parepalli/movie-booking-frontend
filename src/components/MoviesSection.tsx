@@ -45,8 +45,15 @@ const MoviesSection = ({
   const [allMovies, setAllMovies] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [filterLanguage, setFilterLanguage] = useState<string>("All");
+  const [filterGenre, setFilterGenre] = useState<string>("All");
+  const [filterRating, setFilterRating] = useState<string>("All");
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  const languages = ["All", "English", "Hindi", "Telugu", "Kannada", "Tamil", "Malayalam"];
+  const genres = ["All", "Action", "Comedy", "Drama", "Horror", "Thriller", "Animation", "Romance"];
+  const ratings = ["All", "9+", "8+", "7+", "6+", "5+"];
 
   // Mock locations for movies (simulating theater availability)
   const movieLocations: Record<string, string[]> = {
@@ -82,7 +89,7 @@ const MoviesSection = ({
 
   // Handle search and location filtering - only when search is active
   useEffect(() => {
-    if (searchQuery || location) {
+    if (searchQuery || location || filterLanguage !== "All" || filterGenre !== "All" || filterRating !== "All") {
       let filtered = allMovies;
 
       if (searchQuery.trim()) {
@@ -101,11 +108,33 @@ const MoviesSection = ({
         });
       }
 
+      // Apply language filter
+      if (filterLanguage !== "All") {
+        filtered = filtered.filter((movie) => 
+          (movie.language || "English").includes(filterLanguage)
+        );
+      }
+
+      // Apply genre filter
+      if (filterGenre !== "All") {
+        filtered = filtered.filter((movie) => 
+          movie.genre.toLowerCase().includes(filterGenre.toLowerCase())
+        );
+      }
+
+      // Apply rating filter
+      if (filterRating !== "All") {
+        const minRating = parseFloat(filterRating);
+        filtered = filtered.filter((movie) => 
+          (movie.rating || 0) >= minRating
+        );
+      }
+
       setMovies(filtered);
     } else {
       setMovies(allMovies);
     }
-  }, [searchQuery, location, allMovies]);
+  }, [searchQuery, location, allMovies, filterLanguage, filterGenre, filterRating]);
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollContainerRef.current) {
@@ -122,12 +151,12 @@ const MoviesSection = ({
   };
 
   return (
-    <section id="movies" className="py-16 bg-slate-950">
+    <section id="movies" className="py-20 bg-slate-950 border-t border-white/10">
       <div className="container mx-auto px-4">
         {/* Only show heading and content when no search is active */}
         {!searchQuery && !location && (
           <>
-            <div className="text-center mb-12">
+            <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold mb-4">
                 <span className="bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500 bg-clip-text text-transparent">
                   Now Showing
@@ -153,6 +182,78 @@ const MoviesSection = ({
               </Alert>
             )}
 
+            {/* Filter Controls */}
+            <div className="mb-12 flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <p className="text-gray-400 text-sm font-semibold">Filters:</p>
+                {(filterLanguage !== "All" || filterGenre !== "All" || filterRating !== "All") && (
+                  <button
+                    onClick={() => {
+                      setFilterLanguage("All");
+                      setFilterGenre("All");
+                      setFilterRating("All");
+                    }}
+                    className="text-red-500 hover:text-red-400 text-sm font-semibold underline"
+                  >
+                    Clear All
+                  </button>
+                )}
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                {/* Language Filter */}
+                <div className="flex gap-2 flex-wrap">
+                  {languages.map((lang) => (
+                    <button
+                      key={lang}
+                      onClick={() => setFilterLanguage(lang)}
+                      className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
+                        filterLanguage === lang
+                          ? "bg-red-600 text-white shadow-lg"
+                          : "bg-slate-800 text-gray-300 hover:bg-slate-700"
+                      }`}
+                    >
+                      {lang}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Genre Filter */}
+                <div className="flex gap-2 flex-wrap">
+                  {genres.map((gen) => (
+                    <button
+                      key={gen}
+                      onClick={() => setFilterGenre(gen)}
+                      className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
+                        filterGenre === gen
+                          ? "bg-red-600 text-white shadow-lg"
+                          : "bg-slate-800 text-gray-300 hover:bg-slate-700"
+                      }`}
+                    >
+                      {gen}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Rating Filter */}
+                <div className="flex gap-2 flex-wrap">
+                  {ratings.map((rat) => (
+                    <button
+                      key={rat}
+                      onClick={() => setFilterRating(rat)}
+                      className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
+                        filterRating === rat
+                          ? "bg-red-600 text-white shadow-lg"
+                          : "bg-slate-800 text-gray-300 hover:bg-slate-700"
+                      }`}
+                    >
+                      ⭐ {rat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             {isLoading ? (
               <div className="flex justify-center items-center py-12">
                 <div className="text-center">
@@ -160,7 +261,7 @@ const MoviesSection = ({
                   <p className="text-gray-400">Loading movies...</p>
                 </div>
               </div>
-            ) : allMovies.length > 0 ? (
+            ) : (allMovies.length > 0 ? (
               <>
                 {/* Carousel Container */}
                 <div className="relative group mb-12">
@@ -176,7 +277,7 @@ const MoviesSection = ({
                   {/* Movies Carousel */}
                   <div
                     ref={scrollContainerRef}
-                    className="flex gap-6 overflow-x-auto scroll-smooth pb-4 scrollbar-hide snap-x snap-mandatory"
+                    className="flex gap-8 overflow-x-auto scroll-smooth pb-4 scrollbar-hide snap-x snap-mandatory"
                     style={{
                       scrollBehavior: 'smooth',
                       scrollbarWidth: 'none',
@@ -186,7 +287,7 @@ const MoviesSection = ({
                     {allMovies.map((movie) => (
                       <div
                         key={movie.id}
-                        className="flex-shrink-0 w-72 snap-start transform transition-transform hover:scale-105 hover:shadow-2xl"
+                        className="flex-shrink-0 w-56 sm:w-64 md:w-72 snap-start transform transition-transform hover:scale-105 hover:shadow-2xl"
                       >
                         <MovieCard 
                           id={movie.id}
@@ -224,7 +325,7 @@ const MoviesSection = ({
                   No movies available at the moment
                 </p>
               </div>
-            )}
+            ))}
           </>
         )}
       </div>

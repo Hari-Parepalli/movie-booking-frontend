@@ -119,3 +119,80 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+/* ========================
+   SPACING SYSTEM
+   ======================== */
+:root {
+  /* Consistent spacing scale */
+  --spacing-xs: 4px;   /* 8px */
+  --spacing-sm: 8px;   /* 8px */
+  --spacing-md: 16px;  /* 16px */
+  --spacing-lg: 24px;  /* 24px */
+  --spacing-xl: 40px;  /* 40px+ */
+}
+
+/* ========================
+   MICRO-INTERACTIONS & ANIMATIONS
+   ======================== */
+@layer utilities {
+  /* Smooth fade-in on load */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+    opacity: 0;
+  }
+
+  /* Smooth transitions */
+  .transition-smooth {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  /* Better focus states for accessibility */
+  @layer base {
+    button:focus-visible,
+    a:focus-visible {
+      @apply outline-none ring-2 ring-red-500 ring-offset-2 ring-offset-slate-900;
+    }
+  }
+
+  /* Reduce motion for users who prefer it */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ========================
+   COLOR & GRADIENT OPTIMIZATION
+   ======================== */
+/* Limit gradients to specific elements */
+.gradient-heading {
+  background: linear-gradient(135deg, #fbbf24, #f87171, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-button {
+  background: linear-gradient(135deg, #dc2626, #991b1b);
+}
+
+/* Neutral dark tones for most elements */
+.neutral-dark {
+  @apply bg-slate-900 text-gray-100;
+}

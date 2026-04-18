@@ -14,6 +14,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { apiService } from "@/lib/api";
 import { Loader2, X } from "lucide-react";
+import PaymentDialog from "./PaymentDialog";
 
 interface BookingDialogProps {
   open: boolean;
@@ -43,7 +44,8 @@ const SHOW_TIMES = ["10:00 AM", "1:30 PM", "5:00 PM", "8:30 PM"];
 
 export default function BookingDialog({ open, onOpenChange, movie }: BookingDialogProps) {
   const navigate = useNavigate();
-  const [step, setStep] = useState<"showtime" | "seats" | "confirm">("showtime");
+  const [step, setStep] = useState<"showtime" | "seats" | "confirm" | "payment">("showtime");
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [selectedShowTime, setSelectedShowTime] = useState("");
   const [seats, setSeats] = useState<Seat[]>(
     SEAT_ROWS.flatMap((row, rowIdx) =>
@@ -80,7 +82,7 @@ export default function BookingDialog({ open, onOpenChange, movie }: BookingDial
     );
   };
 
-  const handleConfirmBooking = async () => {
+  const handlePaymentSuccess = async (transactionId: string, paymentMethod: string) => {
     if (selectedSeats.length === 0) {
       toast({
         title: "No seats selected",
@@ -114,6 +116,7 @@ export default function BookingDialog({ open, onOpenChange, movie }: BookingDial
         
         setTimeout(() => {
           onOpenChange(false);
+          setPaymentDialogOpen(false);
           // Reset form
           setStep("showtime");
           setSelectedShowTime("");
@@ -148,6 +151,11 @@ export default function BookingDialog({ open, onOpenChange, movie }: BookingDial
     }
   };
 
+  const handleConfirmBooking = () => {
+    // Open payment dialog - seats were already validated before reaching confirm step
+    setPaymentDialogOpen(true);
+  };
+
   const handleClose = () => {
     setStep("showtime");
     setSelectedShowTime("");
@@ -179,8 +187,9 @@ export default function BookingDialog({ open, onOpenChange, movie }: BookingDial
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <>
+      <Dialog open={open} onOpenChange={handleClose}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>Book Tickets - {movie.title}</span>
@@ -209,12 +218,12 @@ export default function BookingDialog({ open, onOpenChange, movie }: BookingDial
             <>
               <div>
                 <h3 className="text-lg font-semibold mb-3">Select a Show Time</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                   {SHOW_TIMES.map((time) => (
                     <Button
                       key={time}
                       variant={selectedShowTime === time ? "default" : "outline"}
-                      className="h-16"
+                      className="h-20 sm:h-16 text-xs sm:text-sm"
                       onClick={() => setSelectedShowTime(time)}
                     >
                       <div className="flex flex-col items-center gap-1">
@@ -226,7 +235,7 @@ export default function BookingDialog({ open, onOpenChange, movie }: BookingDial
                 </div>
               </div>
 
-              <Button onClick={handleNextStep} className="w-full" size="lg">
+              <Button onClick={handleNextStep} className="w-full h-12" size="lg">
                 Next: Select Seats
               </Button>
             </>
@@ -253,7 +262,7 @@ export default function BookingDialog({ open, onOpenChange, movie }: BookingDial
                                 key={seat.id}
                                 onClick={() => toggleSeat(seat.id)}
                                 disabled={seat.booked}
-                                className={`w-8 h-8 rounded text-xs font-semibold transition-all ${
+                                className={`w-10 h-10 sm:w-8 sm:h-8 rounded text-xs font-semibold transition-all ${
                                   seat.booked
                                     ? "bg-muted text-muted-foreground cursor-not-allowed"
                                     : seat.selected
@@ -299,15 +308,15 @@ export default function BookingDialog({ open, onOpenChange, movie }: BookingDial
                 </p>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex gap-3 flex-col sm:flex-row">
                 <Button
                   variant="outline"
                   onClick={() => setStep("showtime")}
-                  className="flex-1"
+                  className="flex-1 h-11"
                 >
                   Back
                 </Button>
-                <Button onClick={handleNextStep} className="flex-1" size="lg">
+                <Button onClick={handleNextStep} className="flex-1 h-11" size="lg">
                   Next: Confirm Booking
                 </Button>
               </div>
@@ -368,8 +377,7 @@ export default function BookingDialog({ open, onOpenChange, movie }: BookingDial
                 </Button>
                 <Button
                   onClick={handleConfirmBooking}
-                  className="flex-1"
-                  size="lg"
+                  className="flex-1 h-11 bg-red-600 hover:bg-red-700 text-white font-semibold"
                   disabled={isBooking}
                 >
                   {isBooking ? (
@@ -387,5 +395,18 @@ export default function BookingDialog({ open, onOpenChange, movie }: BookingDial
         </div>
       </DialogContent>
     </Dialog>
+
+    <PaymentDialog
+      open={paymentDialogOpen}
+      onOpenChange={setPaymentDialogOpen}
+      totalAmount={TOTAL_AMOUNT}
+      onPaymentSuccess={handlePaymentSuccess}
+      bookingDetails={{
+        movieTitle: movie.title,
+        seats: selectedSeats.map((s) => s.id).join(", "),
+        showTime: selectedShowTime,
+      }}
+    />
+    </>
   );
 }
